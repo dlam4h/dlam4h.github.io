@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="目标跟踪," />
+
+
+
+
+  
+
+
+  <link rel="alternate" href="/atom.xml" title="DLAM's Blog" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="SiamFC使用孪生网络结构，即两个结构一样权重一样的网络结构，其中一个输入候选样本，另一个网络输入为待跟踪的目标。通常选取的是视频序列第一帧中的目标对象，而候选样本则是之后每一帧中的图像搜索区域（search image），而孪生网络要做的就是找到之后每一帧中与第一帧中的范本最相似的候选区域，即为这一帧中的目标，这样我们就可以实现对一个目标的跟踪。网络结构如下：每个网络为不带padding的全卷">
+<meta property="og:type" content="article">
+<meta property="og:title" content="目标跟踪之Siamese系列">
+<meta property="og:url" content="http://yoursite.com/2020/03/23/%E7%9B%AE%E6%A0%87%E8%B7%9F%E8%B8%AA%E4%B9%8BSiamese%E7%B3%BB%E5%88%97/index.html">
+<meta property="og:site_name" content="DLAM&#39;s Blog">
+<meta property="og:description" content="SiamFC使用孪生网络结构，即两个结构一样权重一样的网络结构，其中一个输入候选样本，另一个网络输入为待跟踪的目标。通常选取的是视频序列第一帧中的目标对象，而候选样本则是之后每一帧中的图像搜索区域（search image），而孪生网络要做的就是找到之后每一帧中与第一帧中的范本最相似的候选区域，即为这一帧中的目标，这样我们就可以实现对一个目标的跟踪。网络结构如下：每个网络为不带padding的全卷">
+<meta property="og:image" content="http://yoursite.com/2020/03/23/%E7%9B%AE%E6%A0%87%E8%B7%9F%E8%B8%AA%E4%B9%8BSiamese%E7%B3%BB%E5%88%97/1.jpg">
+<meta property="og:image" content="http://yoursite.com/2020/03/23/%E7%9B%AE%E6%A0%87%E8%B7%9F%E8%B8%AA%E4%B9%8BSiamese%E7%B3%BB%E5%88%97/2.png">
+<meta property="og:image" content="http://yoursite.com/2020/03/23/%E7%9B%AE%E6%A0%87%E8%B7%9F%E8%B8%AA%E4%B9%8BSiamese%E7%B3%BB%E5%88%97/3.png">
+<meta property="article:published_time" content="2020-03-22T16:55:38.000Z">
+<meta property="article:modified_time" content="2020-04-21T14:57:06.408Z">
+<meta property="article:author" content="DLAM4H">
+<meta property="article:tag" content="目标跟踪">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2020/03/23/%E7%9B%AE%E6%A0%87%E8%B7%9F%E8%B8%AA%E4%B9%8BSiamese%E7%B3%BB%E5%88%97/1.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/03/23/目标跟踪之Siamese系列/"/>
+
+
+
+
+
+  <title>目标跟踪之Siamese系列 | DLAM's Blog</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">DLAM's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/23/%E7%9B%AE%E6%A0%87%E8%B7%9F%E8%B8%AA%E4%B9%8BSiamese%E7%B3%BB%E5%88%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="DLAM4H">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="DLAM's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">目标跟踪之Siamese系列</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-23T00:55:38+08:00">
+                2020-03-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="SiamFC"><a href="#SiamFC" class="headerlink" title="SiamFC"></a><a href="siamFC.pdf">SiamFC</a></h2><p>使用孪生网络结构，即两个结构一样权重一样的网络结构，其中一个输入候选样本，另一个网络输入为待跟踪的目标。通常选取的是视频序列第一帧中的目标对象，而候选样本则是之后每一帧中的图像搜索区域（search image），而孪生网络要做的就是找到之后每一帧中与第一帧中的范本最相似的候选区域，即为这一帧中的目标，这样我们就可以实现对一个目标的跟踪。网络结构如下：<br><img src="/2020/03/23/%E7%9B%AE%E6%A0%87%E8%B7%9F%E8%B8%AA%E4%B9%8BSiamese%E7%B3%BB%E5%88%97/1.jpg" alt="SiamFC网络结构"><br>每个网络为不带padding的全卷积神经网络（采用AlenxNet的结构），* 部分为相关性计算，采用卷积来实现。计算两个feature map各个位置（区域）上的相似度，得到一个score map。最后对这个score map进行插值（这里使用的是双三线性插值，将大小由17×17变成272×272），获得和原图像一样的空间分辨率，根据该score map，即可定位到跟踪目标在新一帧（检测图像）中的精确位置。SiameseFC在预测的时候，不在线更新模板图像，即只需要计算一遍目标对象的特征，加快了计算速度，但是第一帧特征的好坏关系到跟踪的效果。对目标进行5种尺度来搜索（有点类似anchor的机制）。</p>
+<h2 id="SiamRPN"><a href="#SiamRPN" class="headerlink" title="SiamRPN"></a><a href="siamRPN.pdf">SiamRPN</a></h2><p>基于SiamFC, 引入了Faster RCNN中的RPN模块，让tracker可以回归位置、形状，可以省掉多尺度测试，* 表示卷积操作。网络主体还是AlexNet。<br><img src="/2020/03/23/%E7%9B%AE%E6%A0%87%E8%B7%9F%E8%B8%AA%E4%B9%8BSiamese%E7%B3%BB%E5%88%97/2.png" alt="SiamRPN网络结构"></p>
+<h2 id="SiamRPN-1"><a href="#SiamRPN-1" class="headerlink" title="SiamRPN++"></a><a href="SiamRPN++.pdf">SiamRPN++</a></h2><p>之前的跟踪方法都采用层数较少的Alexnet进行特征提取，特征提取效果有限。当网络层数加深，则需要进行padding操作，这种操作会破坏严格平移不变性（边缘的像素和靠近中心的像素对网络的响应不一样。这就可能导致训练过程中，网络倾向于通过padding的pattern来确定目标在哪，即padding少的位置接近中心，更可能是目标。），带来的弊端就是会学习到位置偏见：按照SiamFC的训练方法，即正样本都在正中心，网络会学到这种统计特性，学到样本中正样本分布的情况。解决办法是：在训练过程中，不再把正样本放在中心，而是以均匀分布的采样方式让目标在中心点附近进行偏移，通过这种方式可以缓解网络因为破坏了严格平移不变性带来的影响，即消除了位置偏见，让现代化网络可以应用于跟踪中。<br>使用更深的resnet网络，同时也采用了特征融合，以及将之前的相似度计算由传统卷积改为了可分离卷积，在精度和速度上都有了一定的提升。<br><img src="/2020/03/23/%E7%9B%AE%E6%A0%87%E8%B7%9F%E8%B8%AA%E4%B9%8BSiamese%E7%B3%BB%E5%88%97/3.png" alt="SiamRPN++网络结构"></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/%E7%9B%AE%E6%A0%87%E8%B7%9F%E8%B8%AA/" rel="tag"># 目标跟踪</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/03/21/%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95/" rel="next" title="排序算法">
+                <i class="fa fa-chevron-left"></i> 排序算法
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">DLAM4H</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+                <a href="/archives">
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#SiamFC"><span class="nav-number">1.</span> <span class="nav-text">SiamFC</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SiamRPN"><span class="nav-number">2.</span> <span class="nav-text">SiamRPN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SiamRPN-1"><span class="nav-number">3.</span> <span class="nav-text">SiamRPN++</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">DLAM4H</span>
+
+  
+</div>
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
