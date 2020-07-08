@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2020-04-25T13:31:34.352Z</updated>
+  <updated>2020-07-07T13:10:54.543Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,32 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Inception系列论文</title>
+    <link href="http://yoursite.com/2020/07/02/Inception%E7%B3%BB%E5%88%97%E8%AE%BA%E6%96%87/"/>
+    <id>http://yoursite.com/2020/07/02/Inception%E7%B3%BB%E5%88%97%E8%AE%BA%E6%96%87/</id>
+    <published>2020-07-02T02:08:40.713Z</published>
+    <updated>2020-07-07T13:10:54.543Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="InceptionV1"><a href="#InceptionV1" class="headerlink" title="InceptionV1"></a><a href="inception_v1.pdf">InceptionV1</a></h2><p><img src="/2020/07/02/Inception%E7%B3%BB%E5%88%97%E8%AE%BA%E6%96%87/1.jpg" alt="inceptionV1模块结构"><br>采用融合不同卷积核的方式来加宽网络。不同大小的卷积核能够提取不同尺度的信息，在3×3和5×5的卷积核前面添加了1×1的卷积核，能够升维和降维且计算量小。训练阶段在网络的不同深度计算loss来帮助网络收敛。</p><h2 id="InceptionV2InceptionV3"><a href="#InceptionV2InceptionV3" class="headerlink" title="InceptionV2InceptionV3"></a><a href="inception_v2.pdf">InceptionV2</a><a href="inception_v3.pdf">InceptionV3</a></h2><p><img src="/2020/07/02/Inception%E7%B3%BB%E5%88%97%E8%AE%BA%E6%96%87/2.jpg" alt="inceptionV2模块结构"><br>对卷积进行分解，将大卷积核分解成若干个小卷积核，感受野不变，但是参数量和计算量减小，加深了网络有利于提升性能。此外，将n×n的卷积核尺寸分解为1×n和n×1两个卷积。例如，一个 3×3 的卷积等价于首先执行一个1×3的卷积再执行一个3×1的卷积。<br>提出了Batch Normalization，用于防止梯度爆炸或弥散、可以提高训练时模型对于不同超参（学习率、初始化）的鲁棒性、可以让大部分的激活函数能够远离其饱和区域。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;InceptionV1&quot;&gt;&lt;a href=&quot;#InceptionV1&quot; class=&quot;headerlink&quot; title=&quot;InceptionV1&quot;&gt;&lt;/a&gt;&lt;a href=&quot;inception_v1.pdf&quot;&gt;InceptionV1&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;&lt;im
+      
+    
+    </summary>
+    
+    
+      <category term="深度学习" scheme="http://yoursite.com/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"/>
+    
+    
+      <category term="目标识别" scheme="http://yoursite.com/tags/%E7%9B%AE%E6%A0%87%E8%AF%86%E5%88%AB/"/>
+    
+  </entry>
   
   <entry>
     <title>卷积的几种实现方式</title>
